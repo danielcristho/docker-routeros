@@ -18,15 +18,40 @@ services:
   #     - "28728:8728"
   #     - "28729:8729"
 
-  routeros-6-44:
-    image: evilfreelancer/docker-routeros:latest
-    restart: unless-stopped
-    cap_add:
-      - NET_ADMIN
-    devices:
+  # routeros-6-44:
+  #   image: evilfreelancer/docker-routeros:latest
+  #   restart: unless-stopped
+  #   cap_add:
+  #     - NET_ADMIN
+  #   devices:
+  #     - /dev/net/tun
+  #   ports:
+  #     - "22222:22"
+  #     - "22223:23"
+  #     - "28728:8728"
+  #     - "28729:8729"
+
+  routeros-7.7:
+      build:
+        context: .
+        dockerfile: Dockerfile
+      container_name: chr-7.7
+      restart: unless-stopped
+      cap_add:
+        - NET_ADMIN
+      devices:
       - /dev/net/tun
-    ports:
-      - "22222:22"
-      - "22223:23"
-      - "28728:8728"
-      - "28729:8729"
+      ports:
+        - "22222:22"
+        - "22223:23"
+        - "28728:8728"
+        - "28729:8729"
+      networks:
+        radius:
+          ipv4_address: 10.0.0.2
+
+networks:
+  radius:
+    ipam:
+      config:
+        - subnet: 10.0.0.0/24

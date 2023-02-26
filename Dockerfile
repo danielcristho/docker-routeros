@@ -1,4 +1,4 @@
-FROM alpine:3.11
+FROM alpine:3.17.2
 
 # For access via VNC
 EXPOSE 5900
@@ -11,18 +11,19 @@ WORKDIR /routeros
 
 # Install dependencies
 RUN set -xe \
- && apk add --no-cache --update \
+    && apk add --no-cache --update \
     netcat-openbsd qemu-x86_64 qemu-system-x86_64 \
     busybox-extras iproute2 iputils \
-    bridge-utils iptables jq bash python3
+    bridge-utils iptables jq bash python3 \
+    libarchive-tools
 
 # Environments which may be change
-ENV ROUTEROS_VERSON="6.48.6"
+ENV ROUTEROS_VERSON="7.7"
 ENV ROUTEROS_IMAGE="chr-$ROUTEROS_VERSON.vdi"
 ENV ROUTEROS_PATH="https://download.mikrotik.com/routeros/$ROUTEROS_VERSON/$ROUTEROS_IMAGE"
 
 # Download VDI image from remote site
-RUN wget "$ROUTEROS_PATH" -O "/routeros/$ROUTEROS_IMAGE"
+RUN wget "$ROUTEROS_PATH" -O "/routeros/$ROUTEROS_IMAGE" || wget -qO- "$ROUTEROS_PATH".zip | bsdtar -C /routeros/ -xf-
 
 # Copy script to routeros folder
 ADD ["./scripts", "/routeros"]

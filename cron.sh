@@ -37,20 +37,31 @@ getTarballs | while read line; do
     if [ "x$(checkTag "$tag")" == "x" ]
         then
 
-            url="https://download.mikrotik.com/routeros/$tag/chr-$tag.vdi"
+            url="https://download.mikrotik.com/routeros/$tag/chr-$tag.vdi.zip"
             if curl --output /dev/null --silent --head --fail "$url"; then
                 echo ">>> URL exists: $url"
-                sed -r "s/(ROUTEROS_VERSON=\")(.*)(\")/\1$tag\3/g" -i Dockerfile
+                curl -L -o "chr-$tag.vdi.zip" "$url"
+                unzip -o "chr-$tag.vdi.zip"
+
+                # create Docker image
+                docker build -t mikrotik-routeros:$tag .
+
+                # remove the VDI file and the Dockerfile
+                rm "chr-$tag.vdi.zip"
+                rm Dockerfile
+
+                # commit changes and tag the release
+                git add .
                 git commit -m "Release of RouterOS changed to $tag" -a
                 git push
                 git tag "$tag"
                 git push --tags
             else
-                echo ">>> URL don't exist: $url"
+                echo ">>> URL doesn't exist: $url"
             fi
 
         else
-            echo ">>> Tag $tag has been already created"
+            echo ">>> Tag $tag has already been created"
     fi
 
 done
